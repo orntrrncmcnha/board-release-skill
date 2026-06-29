@@ -1,0 +1,17 @@
+# Exemplo de config do skill infra-release.
+# Copie para:  ${XDG_CONFIG_HOME:-$HOME/.config}/infra-release/config.yaml
+# (ou deixe o skill gerar no primeiro setup). NÃO commite seu config real.
+
+cloudId: ""                          # site Atlassian (UUID). O skill descobre via getAccessibleAtlassianResources.
+jiraBaseUrl: ""                      # ex.: https://yoursite.atlassian.net
+projectKey: ""                       # ex.: OPS
+
+doneStatusCategory: "Done"           # categoria dos concluídos (entram na release)
+inProgressStatusCategory: "In Progress"
+nextStatusName: ""                   # status do "vem aí" (ex.: "To Do" / "Ready"); vazio = pular a seção
+
+confluence:
+  spaceId: ""                        # espaço onde a página é criada
+  parentId: ""                       # folder ou página pai (opcional; vazio = raiz do espaço)
+
+releaseTitlePrefix: "Release Notes"  # prefixo do título; o título final recebe " — AAAA-MM-DD"
