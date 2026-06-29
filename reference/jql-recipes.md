@@ -1,24 +1,39 @@
 # JQL recipes — collection (Phase 1)
 
-Replace `{{PROJECT_KEY}}` and `{{NEXT_STATUS}}` with config values (`projectKey`, `nextStatusName`).
-Use the `cloudId` from the config on every call.
+Replace `{{PROJECT_KEY}}` and `{{NEXT_STATUS}}` with profile values (`projectKey`, `nextStatusName`).
+Use the profile's `cloudId` on every call.
 
 > **Always filter by status category, not by name.** On localized sites, searching by a translated
 > status name (e.g. `status = "Em andamento"`) can return empty. `statusCategory` is stable.
 
-## Queries
+## COMPLETED — depends on the profile's `scope.mode`
 
-**COMPLETED** (go into the release):
+**`done-now`:**
 ```
 project = {{PROJECT_KEY}} AND statusCategory = Done ORDER BY resolutiondate DESC
 ```
 
-**IN_PROGRESS** (roadmap — "in flight"):
+**`date-window`** (`scope.window`, e.g. `-30d`, or `since`/`until`):
+```
+project = {{PROJECT_KEY}} AND statusCategory = Done AND resolutiondate >= {{WINDOW}} ORDER BY resolutiondate DESC
+```
+
+**`sprint`:**
+- `current` → `project = {{PROJECT_KEY}} AND statusCategory = Done AND sprint in openSprints()`
+- `"<name or id>"` → `project = {{PROJECT_KEY}} AND statusCategory = Done AND sprint = "{{SPRINT}}"`
+- `last-closed` → run `project = {{PROJECT_KEY}} AND statusCategory = Done AND sprint in closedSprints() ORDER BY resolutiondate DESC`,
+  then read the `sprint` field on the returned cards, pick the sprint with the most recent
+  `completeDate`, and keep only that sprint's cards. If ambiguous, list candidate sprints and ask.
+  (The MCP can't list Agile sprints, so this is resolved from the returned data. Request `customfield`
+  sprint via `fields: ["*all"]` on a small page, or include the sprint field name if known.)
+
+## ROADMAP — scope-independent (always current state)
+
+**IN_PROGRESS:**
 ```
 project = {{PROJECT_KEY}} AND statusCategory = "In Progress" ORDER BY updated DESC
 ```
-
-**SELECTED** (roadmap — "coming up"; only if `nextStatusName` is set):
+**SELECTED** (only if `nextStatusName` set):
 ```
 project = {{PROJECT_KEY}} AND status = "{{NEXT_STATUS}}" ORDER BY updated DESC
 ```
@@ -26,26 +41,21 @@ project = {{PROJECT_KEY}} AND status = "{{NEXT_STATUS}}" ORDER BY updated DESC
 ## Fields to request
 
 `["key","summary","description","issuetype","labels","components","assignee","resolutiondate","parent","updated"]`
-
-Markdown body: pass `responseContentFormat: "markdown"` for readable descriptions.
+(For `sprint` scope add the sprint field, or fetch `*all` on a small page to find it.)
+Markdown body: pass `responseContentFormat: "markdown"`.
 
 ## Pagination + extraction
 
 1. Call `searchJiraIssuesUsingJql` with `maxResults: 100`.
-2. If the response exceeds the tool's token limit, it is saved to a file automatically —
-   read it with `jq` instead of dumping it into context.
+2. If the response exceeds the tool's token limit, it is saved to a file — read it with `jq`.
 3. Repeat with `nextPageToken` until `pageInfo.hasNextPage = false`.
 
-Examples of `jq` extraction over the saved file `$F`:
 ```bash
-# compact inventory: key + type + summary
 jq -r '.issues.nodes[] | "\(.key)\t\(.fields.issuetype.name)\t\(.fields.summary)"' "$F"
-# labels per card (for theming)
 jq -r '.issues.nodes[] | "\(.key)\t\(.fields.labels | join(","))"' "$F"
-# count per status category (sanity)
 jq -r '.issues.nodes[] | .fields.status.statusCategory.name' "$F" | sort | uniq -c
 ```
 
-## Counting (when you need the total)
+## Counting
 
-Use `computeIssueCount: true` with `maxResults: 1` on a count-only query — don't combine it with real pagination.
+Use `computeIssueCount: true` with `maxResults: 1` on a count-only query.
