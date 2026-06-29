@@ -1,18 +1,29 @@
-# Example config for the infra-release skill.
-# Copy to:  ${XDG_CONFIG_HOME:-$HOME/.config}/infra-release/config.yaml
+# Example config for the board-release skill.
+# Copy to:  ${XDG_CONFIG_HOME:-$HOME/.config}/board-release/config.yaml
 # (or let the skill generate it on first setup). Do NOT commit your real config.
 
-cloudId: ""                          # Atlassian site (UUID). The skill discovers it via getAccessibleAtlassianResources.
-jiraBaseUrl: ""                      # e.g. https://yoursite.atlassian.net
-projectKey: ""                       # e.g. OPS
+defaultProfile: ""          # profile used when no argument is given and several profiles exist
 
-doneStatusCategory: "Done"           # status category of completed cards (these go into the release)
-inProgressStatusCategory: "In Progress"
-nextStatusName: ""                   # the "coming up" status (e.g. "To Do" / "Ready"); empty = skip that section
+profiles:
+  example:
+    cloudId: ""                          # Atlassian site (UUID). Discovered via getAccessibleAtlassianResources.
+    jiraBaseUrl: ""                      # e.g. https://yoursite.atlassian.net
+    projectKey: ""                       # e.g. OPS
 
-confluence:
-  spaceId: ""                        # space where the page is created
-  parentId: ""                       # parent folder or page (optional; empty = space root)
+    doneStatusCategory: "Done"           # status category of completed cards
+    inProgressStatusCategory: "In Progress"
+    nextStatusName: ""                   # the "coming up" status (e.g. "To Do" / "Ready"); empty = skip
 
-releaseTitlePrefix: "Release Notes"  # title prefix; the final title gets " — YYYY-MM-DD"
-outputLanguage: "English"            # language of the generated release (Confluence + Slack), e.g. "English", "Português"
+    confluence:
+      spaceId: ""                        # space where the page is created
+      parentId: ""                       # parent folder or page (optional; empty = space root)
+
+    releaseTitlePrefix: "Release Notes"  # final title gets " — YYYY-MM-DD" (or period/sprint)
+    outputLanguage: "English"            # language of the release output (Confluence + Slack)
+
+    scope:
+      mode: done-now                     # done-now | date-window | sprint
+      window: "-30d"                     # date-window only (or since/until)
+      sprint: last-closed                # sprint only: current | last-closed | "<name or id>"
+
+    themes: []                           # empty = generic seed themes; else list of {name, emoji, match: [...]}
