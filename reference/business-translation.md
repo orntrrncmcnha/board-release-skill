@@ -19,7 +19,9 @@ Write the output in the configured `outputLanguage`, with correct orthography an
 6. **Tone:** executive, concise, confident.
 7. **Never invent impact.** A card with no evidence of benefit → a "Review" note for the owner to decide.
 
-## Seed themes (adjust per board)
+## Seed themes (fallback)
+
+If the active profile defines a `themes` list, use it (each `{name, emoji, match:[labels/keywords]}`; `match` is a hint, not a strict regex). Otherwise fall back to the seed themes below.
 
 | Theme | Emoji | Catches cards about… |
 |-------|-------|----------------------|
