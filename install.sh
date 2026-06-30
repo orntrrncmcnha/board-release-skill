@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SKILL_SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SKILL_NAME="infra-release"
+SKILL_NAME="board-release"
 SKILLS_DIR="${HOME}/.claude/skills"
 LINK_PATH="${SKILLS_DIR}/${SKILL_NAME}"
 
